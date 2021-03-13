@@ -1,42 +1,19 @@
-/*
-    =============================================================================
-    *****************************************************************************
-    The contents of this file are subject to the Mozilla Public License
-    Version 1.1 (the "License"); you may not use this file except in
-    compliance with the License. You may obtain a copy of the License at
-    http://www.mozilla.org/MPL/
-
-    Software distributed under the License is distributed on an "AS IS"
-    basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
-    License for the specific language governing rights and limitations
-    under the License.
-
-    The Original Code is JAvroPhonetic
-
-    The Initial Developer of the Original Code is
-    Rifat Nabi <to.rifat@gmail.com>
-
-    Copyright (C) OmicronLab (http://www.omicronlab.com). All Rights Reserved.
-
-
-    Contributor(s): ______________________________________.
-
-    *****************************************************************************
-    =============================================================================
-*/
-
 package com.omicronlab.avro;
+
+import com.omicronlab.avro.exception.NoPhoneticLoaderException;
+import com.omicronlab.avro.phonetic.Data;
+import com.omicronlab.avro.phonetic.Match;
+import com.omicronlab.avro.phonetic.Pattern;
+import com.omicronlab.avro.phonetic.Rule;
+import com.omicronlab.avro.trie.AvroTrie;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.omicronlab.avro.exception.NoPhoneticLoaderException;
-import com.omicronlab.avro.phonetic.*;
+public class TriePhoneticParser {
 
-public class PhoneticParser {
-
-    private static volatile PhoneticParser instance = null;
+    private static volatile TriePhoneticParser instance = null;
     private static PhoneticLoader loader = null;
     private static List<Pattern> patterns;
     private static String vowel = "";
@@ -44,9 +21,9 @@ public class PhoneticParser {
     private static String casesensitive = "";
     private boolean initialized = false;
     private static int maxPatternLength = 0;
-
+    private static AvroTrie avroTrie;
     // Prevent initialization
-    PhoneticParser() {
+    private TriePhoneticParser() {
         patterns = new ArrayList<Pattern>();
     }
 
@@ -54,11 +31,11 @@ public class PhoneticParser {
         throw new CloneNotSupportedException();
     }
 
-    public static PhoneticParser getInstance() {
+    public static TriePhoneticParser getInstance() {
         if(instance == null) {
             synchronized (PhoneticParser.class) {
                 if(instance == null) {
-                    instance = new PhoneticParser();
+                    instance = new TriePhoneticParser();
                 }
             }
         }
@@ -66,7 +43,7 @@ public class PhoneticParser {
     }
 
     public synchronized void setLoader(PhoneticLoader loader) {
-        PhoneticParser.loader = loader;
+        TriePhoneticParser.loader = loader;
     }
 
     public synchronized void init() throws Exception {
@@ -75,8 +52,7 @@ public class PhoneticParser {
         }
         Data data = loader.getData();
         patterns = data.getPatterns();
-        Collections.sort(patterns);
-
+        avroTrie=new AvroTrie(TriePhoneticParser.loader);
         vowel = data.getVowel();
         consonant = data.getConsonant();
         casesensitive = data.getCasesensitive();
@@ -118,10 +94,9 @@ public class PhoneticParser {
                     String chunk = fixed.substring(start, end);
 
                     // Binary Search
-                    int left = 0, right = patterns.size() - 1, mid;
-                    while(right >= left) {
-                        mid = (right + left) / 2;
-                        Pattern pattern = patterns.get(mid);
+                        Integer patternPos = avroTrie.getPatternPos(chunk);
+                        if (patternPos==-1) continue;
+                        Pattern pattern= patterns.get(patternPos);
                         if(pattern.getFind().equals(chunk)) {
                             for(Rule rule: pattern.getRules()) {
                                 boolean replace = true;
@@ -140,11 +115,11 @@ public class PhoneticParser {
                                     // Beginning
                                     if(match.getScope().equals("punctuation")) {
                                         if(
-                                            ! (
-                                                (chk < 0 && match.getType().equals("prefix")) ||
-                                                (chk >= fixed.length() && match.getType().equals("suffix")) ||
-                                                this.isPunctuation(fixed.charAt(chk))
-                                            ) ^ match.isNegative()
+                                                ! (
+                                                        (chk < 0 && match.getType().equals("prefix")) ||
+                                                                (chk >= fixed.length() && match.getType().equals("suffix")) ||
+                                                                this.isPunctuation(fixed.charAt(chk))
+                                                ) ^ match.isNegative()
                                         ) {
                                             replace = false;
                                             break;
@@ -153,13 +128,13 @@ public class PhoneticParser {
                                     // Vowel
                                     else if(match.getScope().equals("vowel")) {
                                         if(
-                                            ! (
-                                                (
-                                                    (chk >= 0 && match.getType().equals("prefix")) ||
-                                                    (chk < fixed.length() && match.getType().equals("suffix"))
-                                                ) &&
-                                                this.isVowel(fixed.charAt(chk))
-                                            ) ^ match.isNegative()
+                                                ! (
+                                                        (
+                                                                (chk >= 0 && match.getType().equals("prefix")) ||
+                                                                        (chk < fixed.length() && match.getType().equals("suffix"))
+                                                        ) &&
+                                                                this.isVowel(fixed.charAt(chk))
+                                                ) ^ match.isNegative()
                                         ) {
                                             replace = false;
                                             break;
@@ -168,13 +143,13 @@ public class PhoneticParser {
                                     // Consonant
                                     else if(match.getScope().equals("consonant")) {
                                         if(
-                                            ! (
-                                                (
-                                                    (chk >= 0 && match.getType().equals("prefix")) ||
-                                                    (chk < fixed.length() && match.getType().equals("suffix"))
-                                                ) &&
-                                                this.isConsonant(fixed.charAt(chk))
-                                            ) ^ match.isNegative()
+                                                ! (
+                                                        (
+                                                                (chk >= 0 && match.getType().equals("prefix")) ||
+                                                                        (chk < fixed.length() && match.getType().equals("suffix"))
+                                                        ) &&
+                                                                this.isConsonant(fixed.charAt(chk))
+                                                ) ^ match.isNegative()
                                         ) {
                                             replace = false;
                                             break;
@@ -215,14 +190,8 @@ public class PhoneticParser {
                             cur = end - 1;
                             matched = true;
                             break;
-                        } else if (pattern.getFind().length() > chunk.length() ||
-                                (pattern.getFind().length() == chunk.length() &&
-                                pattern.getFind().compareTo(chunk) < 0)) {
-                            left = mid + 1;
-                        } else {
-                            right = mid - 1;
                         }
-                    }
+
                     if(matched == true) break;
                 }
             }

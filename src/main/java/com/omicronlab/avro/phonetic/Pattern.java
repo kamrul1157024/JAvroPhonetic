@@ -76,4 +76,12 @@ public class Pattern implements Comparable<Pattern> {
         }
     }
 
+    @Override
+    public String toString() {
+        return "Pattern{" +
+                "find='" + find + '\'' +
+                ", replace='" + replace + '\'' +
+                ", rules=" + rules +
+                '}';
+    }
 }

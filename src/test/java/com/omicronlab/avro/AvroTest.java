@@ -49,6 +49,7 @@ public class AvroTest {
             e.printStackTrace();
             System.out.println("Something very unholy has just happened :|");
         }
+        avro.setLoader( new PhoneticXmlLoader() );
     }
 
     // Core Tests
@@ -88,10 +89,16 @@ public class AvroTest {
     }
 
     // Test Functions
-    private void testSentances() {
+    @Test
+    public void testSentances() {
+        long startTime = System.nanoTime();
         //Goal: Test Sentence conversion
         assertEquals("আমি বাংলায় গান গাই",  avro.parse("ami banglay gan gai"));
         assertEquals("আমাদের ভালোবাসা হয়ে গেল ঘাস, খেয়ে গেল গরু আর দিয়ে গেল বাঁশ",  avro.parse("amader valObasa hoye gel ghas, kheye gel goru ar diye gelo ba^sh"));
+        avro.parse(LargeText.text);
+        long stopTime = System.nanoTime();
+        long executionTime=(stopTime - startTime);
+        System.out.println(executionTime/Math.pow(10,9)+"seconds");
     }
 
     private void testRandomChars() {
