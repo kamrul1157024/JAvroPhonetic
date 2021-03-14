@@ -1,9 +1,11 @@
 package com.omicronlab.avro;
 
-import junit.framework.TestCase;
 
-public class PhoneticXmlLoaderTest extends TestCase {
+import org.junit.jupiter.api.Test;
 
+public class PhoneticXmlLoaderTest  {
+
+    @Test
     public void testGetData() throws Exception {
         PhoneticLoader phoneticLoader=new PhoneticXmlLoader();
         phoneticLoader

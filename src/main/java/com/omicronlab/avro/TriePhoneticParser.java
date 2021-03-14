@@ -8,7 +8,6 @@ import com.omicronlab.avro.phonetic.Rule;
 import com.omicronlab.avro.trie.AvroTrie;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class TriePhoneticParser {
@@ -33,7 +32,7 @@ public class TriePhoneticParser {
 
     public static TriePhoneticParser getInstance() {
         if(instance == null) {
-            synchronized (PhoneticParser.class) {
+            synchronized (TriePhoneticParser.class) {
                 if(instance == null) {
                     instance = new TriePhoneticParser();
                 }
@@ -52,7 +51,8 @@ public class TriePhoneticParser {
         }
         Data data = loader.getData();
         patterns = data.getPatterns();
-        avroTrie=new AvroTrie(TriePhoneticParser.loader);
+        avroTrie=AvroTrie.getInstance();
+        avroTrie.setPhoneticLoader(loader);
         vowel = data.getVowel();
         consonant = data.getConsonant();
         casesensitive = data.getCasesensitive();
@@ -93,7 +93,6 @@ public class TriePhoneticParser {
                 if(end <= fixed.length()) {
                     String chunk = fixed.substring(start, end);
 
-                    // Binary Search
                         Integer patternPos = avroTrie.getPatternPos(chunk);
                         if (patternPos==-1) continue;
                         Pattern pattern= patterns.get(patternPos);

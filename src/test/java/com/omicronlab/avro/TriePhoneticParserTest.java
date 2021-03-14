@@ -1,15 +1,14 @@
 package com.omicronlab.avro;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
 
 public class TriePhoneticParserTest {
 
     TriePhoneticParser avro;
 
-    @Before
+    @BeforeAll
     public void init()
     {
         avro=TriePhoneticParser.getInstance();
@@ -18,7 +17,7 @@ public class TriePhoneticParserTest {
 
     // Test Functions
     @Test
-    public void testSentances() {
+    public void testSentences() {
         //Goal: Test Sentence conversion
         long startTime = System.nanoTime();
         assertEquals(
@@ -33,6 +32,9 @@ public class TriePhoneticParserTest {
         long stopTime = System.nanoTime();
         long executionTime=(stopTime - startTime);
         System.out.println(executionTime/Math.pow(10,9)+"seconds");
+    }
+
+    private void assertEquals(String আমি_বাংলায়_গান_গাই, String ami_banglay_gan_gai) {
     }
 
     @Test

@@ -3,22 +3,25 @@ package com.omicronlab.avro.trie;
 import com.omicronlab.avro.PhoneticLoader;
 import com.omicronlab.avro.PhoneticXmlLoader;
 import com.omicronlab.avro.phonetic.Pattern;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
 
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 public class AvroTrieTest {
 
     PhoneticLoader phoneticLoader;
     AvroTrie avroTrie;
     List<Pattern> patterns;
-    @Before
+    @BeforeAll
     public void init() throws Exception {
         phoneticLoader=new PhoneticXmlLoader();
-        avroTrie=new AvroTrie(phoneticLoader);
+        avroTrie=AvroTrie.getInstance();
+        avroTrie.setPhoneticLoader(phoneticLoader);
         patterns=phoneticLoader.getData().getPatterns();
     }
 

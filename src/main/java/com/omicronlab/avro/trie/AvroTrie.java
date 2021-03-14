@@ -3,13 +3,14 @@ package com.omicronlab.avro.trie;
 
 import com.omicronlab.avro.PhoneticLoader;
 import com.omicronlab.avro.phonetic.Pattern;
-import com.omicronlab.avro.phonetic.Rule;
 
 import java.util.List;
 
 public class AvroTrie {
 
-    private TrieNode head;
+    private final TrieNode head;
+    private PhoneticLoader phoneticLoader;
+    private static volatile AvroTrie avroTrie=null;
 
     private void init(PhoneticLoader phoneticLoader) throws Exception {
 
@@ -24,8 +25,25 @@ public class AvroTrie {
 
     }
 
-    public AvroTrie(PhoneticLoader phoneticLoader) throws Exception {
+    public Object clone() throws CloneNotSupportedException {
+     throw new CloneNotSupportedException();
+    }
+
+    private AvroTrie() throws Exception {
         head=new TrieNode();
+    }
+
+    public static synchronized AvroTrie getInstance() throws Exception {
+        if(avroTrie==null)
+        {
+            avroTrie=new AvroTrie();
+        }
+        return avroTrie;
+    }
+
+
+    public void setPhoneticLoader(PhoneticLoader phoneticLoader) throws Exception {
+        this.phoneticLoader = phoneticLoader;
         init(phoneticLoader);
     }
 
